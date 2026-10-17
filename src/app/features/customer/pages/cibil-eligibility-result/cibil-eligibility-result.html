@@ -1,0 +1,29 @@
+<div class="customer-shell">
+  <app-customer-sidebar></app-customer-sidebar>
+  <main class="result-main">
+    <header class="result-topbar"><div class="blue-strip"></div><span class="notification"><i class="bi bi-bell"></i></span></header>
+    <section class="result-content">
+      <div class="result-heading"><div><span class="eyebrow">CUSTOMER SERVICES</span><h1><i class="bi bi-check-circle-fill"></i> Eligibility Result</h1><p>Your latest loan eligibility assessment.</p></div><a routerLink="/customer/cibil" class="back-link"><i class="bi bi-arrow-left"></i> Back to CIBIL Score</a></div>
+      <div class="error-box" *ngIf="errorMessage"><i class="bi bi-exclamation-circle-fill"></i><div><strong>Unable to load eligibility result</strong><p>{{ errorMessage }}</p><button (click)="loadResult()" type="button">Try again</button></div></div>
+      <div class="loading-box" *ngIf="loading"><span class="spinner"></span> Fetching your eligibility result…</div>
+      <section class="eligibility-card" *ngIf="result && !loading">
+        <div class="detail-grid">
+          <div class="result-detail"><span>Customer Name</span><strong>{{ name }}</strong></div>
+          <div class="result-detail"><span>PAN Number</span><strong>{{ pan }}</strong></div>
+          <div class="result-detail"><span>Monthly Income</span><strong>{{ income !== null ? (income | currency:'INR':'symbol':'1.2-2') : '—' }}</strong></div>
+          <div class="result-detail"><span>CIBIL Score</span><strong>{{ score !== null ? score : '—' }}</strong></div>
+          <div class="result-detail"><span>Eligible Loan Amount</span><strong>{{ loanAmount !== null ? (loanAmount | currency:'INR':'symbol':'1.0-2') : '—' }}</strong></div>
+          <div class="result-detail" *ngIf="result.riskCategory"><span>Risk Category</span><strong>{{ result.riskCategory }}</strong></div>
+        </div>
+        <div class="decision-banner" [class.approved]="approved" [class.not-approved]="!approved">
+          <i class="bi" [class.bi-check-circle-fill]="approved" [class.bi-info-circle-fill]="!approved"></i>
+          <h2>{{ statusText }}</h2>
+          <p>{{ approved ? 'Congratulations! Your loan eligibility is approved.' : 'Please review your latest eligibility status and contact your loan officer if you need assistance.' }}</p>
+        </div>
+        <div class="result-actions"><a routerLink="/customer/cibil" class="primary-link">View CIBIL Score</a></div>
+      </section>
+      <div class="no-result" *ngIf="!result && !loading && !errorMessage"><i class="bi bi-file-earmark-text"></i><h2>No eligibility result yet</h2><p>Check your CIBIL score first to view your eligibility details.</p><a routerLink="/customer/cibil" class="primary-link">Check CIBIL Score</a></div>
+      <footer class="result-footer">© 2026 LoanApp | Smart Loan Management System</footer>
+    </section>
+  </main>
+</div>

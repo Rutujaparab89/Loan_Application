@@ -1,0 +1,68 @@
+<div class="dashboard-layout">
+  <app-credit-officer-sidebar></app-credit-officer-sidebar>
+  <main class="dashboard-content">
+    <header class="topbar">
+      <div><span class="eyebrow">LOAN OPERATIONS</span><h1>Report Dashboard</h1></div>
+      <div class="profile"><span class="avatar">O</span><span>Loan Officer</span></div>
+    </header>
+    <section class="content">
+      <div class="toolbar">
+        <div><h2>LOS &amp; LMS Overview</h2><p>Applications, loan portfolio and collections at a glance.</p></div>
+        <div class="toolbar-right">
+          <span class="data-mode"><i></i>{{ loading ? 'Loading data' : (losError || lmsError ? 'Backend unavailable' : 'Live data') }}</span>
+        </div>
+      </div>
+      <div class="api-error" *ngIf="losError || lmsError" role="alert">
+        <strong>Unable to load live dashboard data</strong>
+        <p *ngIf="losError">LOS: {{ losError }}</p>
+        <p *ngIf="lmsError">LMS: {{ lmsError }}</p>
+        <button type="button" (click)="loadDashboard()">Retry</button>
+      </div>
+      <div class="dashboard-columns">
+        <section class="system-column los-column">
+          <header class="column-heading"><div><span class="section-kicker">LOS · ORIGINATION</span><h2>Application Overview</h2></div><span class="section-badge">LOS</span></header>
+          <div class="mini-stats">
+            <article class="mini-stat blue"><span class="mini-icon">▤</span><span class="mini-label">Applications</span><strong>{{ losDashboard.totalApplications | number }}</strong></article>
+            <article class="mini-stat green"><span class="mini-icon">✓</span><span class="mini-label">Approved</span><strong>{{ losDashboard.approvedApplications | number }}</strong></article>
+            <article class="mini-stat red"><span class="mini-icon">×</span><span class="mini-label">Rejected</span><strong>{{ losDashboard.rejectedApplications | number }}</strong></article>
+            <article class="mini-stat amber"><span class="mini-icon">◷</span><span class="mini-label">Pending</span><strong>{{ losDashboard.pendingApplications | number }}</strong></article>
+          </div>
+          <article class="panel chart-panel funnel-panel"><div class="panel-heading"><div><h3>Application Funnel</h3><p>Applications by status</p></div><span class="panel-icon">⌁</span></div>
+            <div class="funnel-content"><div class="funnel-shapes"><div *ngFor="let item of funnelEntries; let i = index" class="funnel-row" [style.width.%]="100 - i * (35 / (funnelEntries.length || 1))"><span>{{ item.label }}</span><b>{{ item.value | number }}</b></div></div>
+              <div class="funnel-legend"><div *ngFor="let item of funnelEntries; let i = index"><span class="legend-dot" [class]="'dot-' + (i % 5)"></span><span>{{ item.label }}</span><strong>{{ item.value | number }}</strong></div></div></div>
+          </article>
+          <article class="panel chart-panel trend-panel"><div class="panel-heading"><div><h3>Application Trend</h3><p>Monthly application volume</p></div><span class="period-pill">{{ fromDate | date:'yyyy' }}</span></div>
+            <div class="line-trend-chart">
+              <div class="line-y-axis"><span>{{ maxMonthly }}</span><span>{{ (maxMonthly * .75) | number:'1.0-0' }}</span><span>{{ (maxMonthly * .5) | number:'1.0-0' }}</span><span>{{ (maxMonthly * .25) | number:'1.0-0' }}</span><span>0</span></div>
+              <div class="line-plot">
+                <div class="line-grid grid-top"></div><div class="line-grid grid-quarter"></div><div class="line-grid grid-middle"></div><div class="line-grid grid-three-quarter"></div><div class="line-grid grid-bottom"></div>
+                <svg class="trend-svg" viewBox="0 0 1200 240" preserveAspectRatio="none" role="img" aria-label="Monthly application trend line chart">
+                  <polyline class="trend-line" [attr.points]="monthlyLinePoints"></polyline>
+                  <circle *ngFor="let point of monthlyChartPoints; trackBy: trackChartPoint" class="trend-point" [attr.cx]="point.x" [attr.cy]="point.y" r="4" [attr.title]="point.month + ': ' + point.applications + ' applications'"></circle>
+                </svg>
+                <div class="line-month-labels"><span *ngFor="let month of monthNames; let i = index">{{ month }}</span></div>
+              </div>
+            </div>
+          </article>
+        </section>
+        <section class="system-column lms-column">
+          <header class="column-heading"><div><span class="section-kicker">LMS · SERVICING</span><h2>Loan Portfolio</h2></div><span class="section-badge">LMS</span></header>
+          <div class="mini-stats">
+            <article class="mini-stat blue"><span class="mini-icon">▦</span><span class="mini-label">Total Loans</span><strong>{{ lmsDashboard.totalLoans | number }}</strong></article>
+            <article class="mini-stat green"><span class="mini-icon">✓</span><span class="mini-label">Active</span><strong>{{ lmsDashboard.activeLoans | number }}</strong></article>
+            <article class="mini-stat purple"><span class="mini-icon">▣</span><span class="mini-label">Closed</span><strong>{{ lmsDashboard.closedLoans | number }}</strong></article>
+            <article class="mini-stat amber"><span class="mini-icon">₹</span><span class="mini-label">Products</span><strong>{{ lmsDashboard.portfolio.length | number }}</strong></article>
+          </div>
+          <article class="panel chart-panel portfolio-panel"><div class="panel-heading"><div><h3>Loan Portfolio Summary</h3><p>Outstanding by product</p></div><span class="panel-icon">▤</span></div>
+            <div class="portfolio-content"><div class="donut-wrap"><div class="donut"><div class="donut-hole"><span>Portfolio</span><strong>{{ money(totalOutstanding) }}</strong></div></div></div>
+              <div class="portfolio-legend"><div *ngFor="let item of lmsDashboard.portfolio; let i = index"><span class="legend-dot" [class]="'dot-' + (i % 5)"></span><span>{{ item.product }}</span><strong>{{ money(item.outstandingAmount) }}</strong></div></div></div>
+          </article>
+          <article class="panel chart-panel collection-panel"><div class="panel-heading"><div><h3>Collection Efficiency</h3><p>Monthly EMI collection rate</p></div><span class="panel-icon">◷</span></div>
+            <div class="collection-chart"><div class="collection-y-axis"><span>100%</span><span>50%</span><span>0%</span></div><div class="collection-bars"><div class="collection-bar-item" *ngFor="let item of lmsDashboard.monthlyCollectionEfficiency; trackBy: trackCollection"><div class="collection-bar-track"><div class="collection-bar" [style.height.%]="item.efficiencyPercentage > 100 ? 100 : item.efficiencyPercentage" [title]="item.efficiencyPercentage + '%'"></div></div><span>{{ item.monthName || monthNames[item.month - 1] }}</span></div></div></div>
+          </article>
+        </section>
+      </div>
+      <div class="footer-note">{{ losError || lmsError ? 'Live data unavailable. No demo data is displayed.' : (loading ? 'Fetching live data from your backend.' : 'Dashboard data loaded from your backend.') }}</div>
+    </section>
+  </main>
+</div>

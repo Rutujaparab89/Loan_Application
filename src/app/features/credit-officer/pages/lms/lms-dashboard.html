@@ -1,0 +1,58 @@
+<div class="lms-shell">
+  <aside class="sidebar">
+    <a class="brand" routerLink="/lms/dashboard"><span class="brand-mark">◈</span><span>FinSure <small>LMS</small></span></a>
+    <nav aria-label="Main navigation">
+      <a routerLink="/los/dashboard"><span>▥</span> LOS Dashboard</a>
+      <a class="active" routerLink="/lms/dashboard"><span>▦</span> LMS Dashboard</a>
+      <a><span>▤</span> Loan Portfolio</a><a><span>₹</span> Disbursements</a>
+      <a><span>◷</span> EMI Collections</a><a><span>▣</span> Reports</a>
+    </nav>
+    <div class="sidebar-footer">Loan Management System</div>
+  </aside>
+
+  <main class="main-area">
+    <header class="topbar">
+      <div><span class="eyebrow">LOAN MANAGEMENT SYSTEM</span><h1>LMS Dashboard</h1></div>
+      <div class="profile"><span class="avatar">A</span><span>Admin</span><span class="chevron">⌄</span></div>
+    </header>
+
+    <section class="content">
+      <div class="page-heading"><div><h2>Loan Portfolio Overview</h2><p>Track active loans, disbursements and monthly EMI collections.</p></div><span class="live-tag"><i></i> Live data</span></div>
+
+      <form class="filters" (ngSubmit)="loadDashboard()">
+        <label>From date<input type="date" name="fromDate" [(ngModel)]="fromDate" required></label>
+        <label>To date<input type="date" name="toDate" [(ngModel)]="toDate" required></label>
+        <button class="search-btn" type="submit" [disabled]="loading">{{ loading ? 'Loading…' : 'Refresh dashboard' }}</button>
+      </form>
+
+      <div class="alert error" *ngIf="errorMessage"><span>!</span><div><strong>Unable to load dashboard</strong><p>{{ errorMessage }}</p><button type="button" (click)="loadDashboard()">Try again</button></div></div>
+      <div class="loading" *ngIf="loading"><span class="spinner"></span> Fetching dashboard data…</div>
+
+      <section class="stat-grid" aria-label="Loan summary">
+        <article class="stat-card blue"><div class="stat-top"><span class="stat-icon">▦</span><span class="stat-label">Total Loans</span></div><strong>{{ dashboard.totalLoans | number }}</strong><span class="stat-foot">All loan accounts</span></article>
+        <article class="stat-card green"><div class="stat-top"><span class="stat-icon">✓</span><span class="stat-label">Active Loans</span></div><strong>{{ dashboard.activeLoans | number }}</strong><span class="stat-foot">Currently active</span></article>
+        <article class="stat-card purple"><div class="stat-top"><span class="stat-icon">▣</span><span class="stat-label">Closed Loans</span></div><strong>{{ dashboard.closedLoans | number }}</strong><span class="stat-foot">Successfully closed</span></article>
+        <article class="stat-card amber"><div class="stat-top"><span class="stat-icon">₹</span><span class="stat-label">Portfolio Products</span></div><strong>{{ dashboard.portfolio.length | number }}</strong><span class="stat-foot">Products with active portfolio</span></article>
+      </section>
+
+      <section class="charts-grid">
+        <article class="panel"><div class="panel-heading"><div><h3>Monthly Disbursements</h3><p>Amount disbursed by month</p></div><span class="panel-icon">₹</span></div>
+          <div class="empty-chart" *ngIf="!dashboard.monthlyDisbursements.length && !loading"><div class="empty-icon">₹</div><strong>No disbursement data available</strong><span>Try another date range or check disbursement records.</span></div>
+          <div class="disbursement-chart" *ngIf="dashboard.monthlyDisbursements.length"><div class="bar-item" *ngFor="let item of dashboard.monthlyDisbursements; trackBy: trackDisbursement"><div class="bar-value">{{ money(item.disbursementAmount) }}</div><div class="bar-track"><div class="bar" [style.width.%]="(numeric(item.disbursementAmount) / maxDisbursement) * 100"></div></div><div class="bar-label"><span>{{ disbursementLabel(item) }}</span><strong>{{ item.loansDisbursed }} loans</strong></div></div></div>
+        </article>
+
+        <article class="panel"><div class="panel-heading"><div><h3>Loan Portfolio</h3><p>Active loans and outstanding amount by product</p></div><span class="panel-icon">▤</span></div>
+          <div class="table-wrap" *ngIf="dashboard.portfolio.length; else noPortfolio"><table><thead><tr><th>Product</th><th>Active loans</th><th>Outstanding</th><th>Share</th></tr></thead><tbody><tr *ngFor="let item of dashboard.portfolio"><td class="product-name">{{ item.product || 'Other' }}</td><td>{{ item.activeLoans | number }}</td><td class="amount">{{ money(item.outstandingAmount) }}</td><td><div class="share-cell"><div class="share-track"><div class="share-bar" [style.width.%]="item.percentageOfOutstanding"></div></div><span>{{ item.percentageOfOutstanding | number:'1.0-1' }}%</span></div></td></tr></tbody></table></div>
+          <ng-template #noPortfolio><div class="empty-chart compact" *ngIf="!loading"><div class="empty-icon">▤</div><strong>No portfolio data available</strong><span>Portfolio results will appear here.</span></div></ng-template>
+        </article>
+      </section>
+
+      <section class="panel collection-panel"><div class="panel-heading"><div><h3>Monthly Collection Efficiency</h3><p>Successful payments compared with EMI amount due</p></div><span class="panel-icon">◷</span></div>
+        <div class="table-wrap" *ngIf="dashboard.monthlyCollectionEfficiency.length; else noCollections"><table><thead><tr><th>Month</th><th>Amount due</th><th>Amount collected</th><th>Efficiency</th><th>Progress</th></tr></thead><tbody><tr *ngFor="let item of dashboard.monthlyCollectionEfficiency; trackBy: trackCollection"><td class="product-name">{{ collectionLabel(item) }}</td><td>{{ money(item.amountDue) }}</td><td class="amount">{{ money(item.amountCollected) }}</td><td><span class="efficiency-pill" [class.good]="item.efficiencyPercentage >= 80" [class.warning]="item.efficiencyPercentage < 80">{{ item.efficiencyPercentage | number:'1.0-2' }}%</span></td><td><div class="share-track progress-track"><div class="share-bar" [style.width.%]="item.efficiencyPercentage > 100 ? 100 : item.efficiencyPercentage"></div></div></td></tr></tbody></table></div>
+        <ng-template #noCollections><div class="empty-chart compact" *ngIf="!loading"><div class="empty-icon">◷</div><strong>No collection data available</strong><span>Monthly collection results will appear here.</span></div></ng-template>
+      </section>
+
+      <footer class="page-footer"><span>FinSure LMS · Portfolio & Collections</span><span>Dashboard values are based on the selected date range where applicable.</span></footer>
+    </section>
+  </main>
+</div>

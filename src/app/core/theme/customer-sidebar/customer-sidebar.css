@@ -1,0 +1,13 @@
+
+:host{display:block;position:sticky;top:0;align-self:flex-start;width:242px;min-width:242px;height:100vh;min-height:100vh;background:#0866d4;color:#fff;flex:0 0 242px;z-index:20}
+.sidebar{display:flex;flex-direction:column;height:100vh;min-height:100vh;overflow-y:auto;background:linear-gradient(180deg,#0873e8 0%,#075ac4 100%);color:#fff;padding:0 0 24px}
+.sidebar-brand{display:flex;align-items:center;gap:12px;padding:28px 25px 34px;font-size:21px;font-weight:700;letter-spacing:.2px}
+.sidebar-brand i{font-size:26px;color:#fff}
+.sidebar nav{display:flex;flex-direction:column;gap:5px;padding:8px 12px}
+.menu-link{min-height:48px;display:flex;align-items:center;gap:13px;padding:13px 15px;color:#e8f2ff;text-decoration:none;font-size:15px;border-radius:7px;transition:background .16s,color .16s}
+.menu-link i:first-child{width:19px;font-size:17px;text-align:center}
+.menu-link .ms-auto{margin-left:auto}
+.menu-link:hover,.menu-link.active{background:rgba(255,255,255,.17);color:#fff}
+.menu-link.active{box-shadow:inset 3px 0 #fff;font-weight:600}
+@media(max-width:850px){:host{width:200px;min-width:200px;flex-basis:200px}.sidebar-brand{padding:25px 16px;font-size:19px}.menu-link{padding:12px 10px;font-size:13px;gap:10px}}
+@media(max-width:620px){:host{width:68px;min-width:68px;flex-basis:68px}.sidebar-brand{justify-content:center;padding:25px 5px;font-size:0}.sidebar-brand i{font-size:25px}.menu-link{justify-content:center;padding:15px 5px}.menu-link span,.menu-link .ms-auto{display:none}.menu-link i:first-child{font-size:19px}}

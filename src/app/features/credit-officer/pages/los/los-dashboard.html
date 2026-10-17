@@ -1,0 +1,58 @@
+<div class="los-shell">
+  <aside class="sidebar">
+    <div class="brand"><span class="brand-mark">◈</span><span>FinSure <small>LOS</small></span></div>
+    <nav aria-label="Main navigation">
+      <a href="/los/dashboard" class="active"><span>⌂</span> LOS Dashboard</a><a href="/lms/dashboard"><span>▦</span> LMS Dashboard</a><a><span>▤</span> Applications</a><a><span>▣</span> File Tracking</a>
+      <a><span>♙</span> Customers</a><a><span>♧</span> Leads</a><a><span>◉</span> CIBIL / Credit Check</a>
+      <a><span>▣</span> Score Card</a><a><span>▱</span> Deal Management</a><a><span>▥</span> Reports</a>
+      <a><span>▦</span> Master</a><a><span>♙</span> User Management</a><a><span>◷</span> Audit Trail</a><a><span>⚙</span> Settings</a>
+    </nav>
+    <div class="sidebar-footer">Loan Origination System</div>
+  </aside>
+
+  <main class="main-area">
+    <header class="topbar"><div><span class="eyebrow">LOAN ORIGINATION SYSTEM</span><h1>Reports Dashboard</h1></div><div class="profile"><span class="avatar">A</span><span>Admin</span><span class="chevron">⌄</span></div></header>
+    <section class="content">
+      <div class="page-heading"><div><h2>Application Overview</h2><p>Monitor application volumes and approval progress.</p></div><span class="live-tag"><i></i> Live data</span></div>
+      <form class="filters" (ngSubmit)="loadDashboard()">
+        <label>From date<input type="date" name="fromDate" [(ngModel)]="fromDate" required></label>
+        <label>To date<input type="date" name="toDate" [(ngModel)]="toDate" required></label>
+        <button class="search-btn" type="submit" [disabled]="loading">{{ loading ? 'Loading…' : 'Refresh dashboard' }}</button>
+      </form>
+      <div class="alert error" *ngIf="errorMessage"><span>!</span><div><strong>Unable to load dashboard</strong><p>{{ errorMessage }}</p><button type="button" (click)="loadDashboard()">Try again</button></div></div>
+      <div class="loading" *ngIf="loading"><span class="spinner"></span> Fetching dashboard data…</div>
+
+      <section class="stat-grid" aria-label="Application summary">
+        <article class="stat-card blue"><div class="stat-top"><span class="stat-icon">▤</span><span class="stat-label">Total Applications</span></div><strong>{{ dashboard.totalApplications | number }}</strong><span class="stat-foot">For selected period</span></article>
+        <article class="stat-card green"><div class="stat-top"><span class="stat-icon">✓</span><span class="stat-label">Applications Approved</span></div><strong>{{ dashboard.approvedApplications | number }}</strong><span class="stat-foot">Approved applications</span></article>
+        <article class="stat-card red"><div class="stat-top"><span class="stat-icon">×</span><span class="stat-label">Applications Rejected</span></div><strong>{{ dashboard.rejectedApplications | number }}</strong><span class="stat-foot">Rejected applications</span></article>
+        <article class="stat-card amber"><div class="stat-top"><span class="stat-icon">◷</span><span class="stat-label">Applications Pending</span></div><strong>{{ dashboard.pendingApplications | number }}</strong><span class="stat-foot">Awaiting decision</span></article>
+      </section>
+
+      <section class="charts-grid">
+        <article class="panel funnel-panel"><div class="panel-heading"><div><h3>Application Funnel</h3><p>Applications by current status</p></div><span class="panel-icon">⌁</span></div>
+          <div class="funnel-content"><div class="funnel-shapes"><div *ngFor="let item of funnelEntries; let i = index" class="funnel-row" [style.width.%]="100 - i * (45 / (funnelEntries.length || 1))" [style.opacity]="1 - i * 0.09"><span>{{ item.label }}</span><b>{{ item.value | number }}</b></div></div>
+          <div class="funnel-legend"><div *ngFor="let item of funnelEntries; let i = index"><span class="legend-dot" [class]="'dot-' + (i % 5)"></span><span>{{ item.label }}</span><strong>{{ item.value | number }}</strong></div></div></div>
+        </article>
+        <article class="panel trend-panel"><div class="panel-heading"><div><h3>Application Trend</h3><p>Monthly application volume</p></div><span class="period-pill">{{ fromDate | date:'yyyy' }} – {{ toDate | date:'yyyy' }}</span></div>
+          <div class="empty-chart" *ngIf="!dashboard.monthlyTrend?.length && !loading"><div class="empty-icon">⌁</div><strong>No monthly trend available</strong><span>Try another date range or check application dates.</span></div>
+          <div class="line-trend-chart" *ngIf="dashboard.monthlyTrend?.length">
+            <div class="line-y-axis"><span>{{ maxMonthly }}</span><span>{{ (maxMonthly * 0.66) | number:'1.0-0' }}</span><span>{{ (maxMonthly * 0.33) | number:'1.0-0' }}</span><span>0</span></div>
+            <div class="line-plot">
+              <div class="line-grid grid-top"></div><div class="line-grid grid-middle"></div><div class="line-grid grid-bottom-middle"></div><div class="line-grid grid-bottom"></div>
+              <svg class="trend-svg" viewBox="0 0 720 220" preserveAspectRatio="none" role="img" aria-label="Monthly application trend line chart">
+                <polyline class="trend-line" [attr.points]="trendLinePoints"></polyline>
+                <circle *ngFor="let item of chartMonths; let i = index" class="trend-point" [attr.cx]="trendX(i)" [attr.cy]="trendY(item)" r="3.5">
+                  <title>{{ item.label }}: {{ item.applications }} applications</title>
+                </circle>
+              </svg>
+              <div class="line-month-labels"><span *ngFor="let item of chartMonths">{{ item.label }}</span></div>
+            </div>
+          </div>
+          <div class="chart-summary" *ngIf="dashboard.monthlyTrend?.length"><span class="blue-dot"></span> Applications <strong>{{ dashboard.totalApplications | number }} total</strong></div>
+        </article>
+      </section>
+      <footer class="page-footer"><span>FinSure LOS · Reports & Analytics</span><span>Data is based on the selected date range.</span></footer>
+    </section>
+  </main>
+</div>
