@@ -1,0 +1,1 @@
+package com.example.Loan_Project.Service;import com.example.Loan_Project.DTO.LmsDashboardResponse;import java.time.LocalDate;public interface LmsDashboardService{LmsDashboardResponse getDashboard(LocalDate fromDate,LocalDate toDate);}
